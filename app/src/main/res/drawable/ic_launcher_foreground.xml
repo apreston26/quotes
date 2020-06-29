@@ -6,7 +6,7 @@
   <group android:translateX="2.1176472"
       android:translateY="2.1176472">
       <path
-          android:fillColor="#9400D3"
+          android:fillColor="#FFFFFF"
           android:pathData="M6,17h3l2,-4L11,7L5,7v6h3zM14,17h3l2,-4L19,7h-6v6h3z"/>
   </group>
 </vector>
