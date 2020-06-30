@@ -2,17 +2,20 @@ package edu.cnm.deepdive.quotes.controller;
 
 import android.app.Dialog;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.DialogFragment;
-import androidx.fragment.app.Fragment;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-
+import androidx.lifecycle.ViewModelProvider;
 import edu.cnm.deepdive.quotes.R;
+import edu.cnm.deepdive.quotes.model.entity.Source;
+import edu.cnm.deepdive.quotes.viewmodel.MainViewModel;
 
 public class QuoteEditFragment extends DialogFragment {
 
@@ -22,6 +25,8 @@ public class QuoteEditFragment extends DialogFragment {
   private View root;
   private EditText quoteText;
   private AutoCompleteTextView sourceName;
+  private AlertDialog dialog;
+  private MainViewModel viewModel;
 
   public static QuoteEditFragment newInstance(long quoteId) {
     QuoteEditFragment fragment = new QuoteEditFragment();
@@ -30,7 +35,6 @@ public class QuoteEditFragment extends DialogFragment {
     fragment.setArguments(args);
     return fragment;
   }
-
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -44,12 +48,46 @@ public class QuoteEditFragment extends DialogFragment {
   @Override
   public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
     root = LayoutInflater.from(getContext()).inflate(R.layout.fragment_quote_edit, null, false);
+    quoteText = root.findViewById(R.id.quote_text);
+    sourceName = root.findViewById(R.id.source_name);
+    // TODO Add listeners to fields.
+    dialog = new AlertDialog.Builder(getContext())
+//        .setIcon(android.R.drawable.ic_m)
+        .setTitle("Quote Details")
+        .setView(root)
+        .setPositiveButton(android.R.string.ok, (dlg, which) -> {})
+        .setNegativeButton(android.R.string.cancel, (dlg, which) -> {})
+        .create();
+    // TODO Add onShow listener.
+    return dialog;
   }
 
   @Override
   public View onCreateView(LayoutInflater inflater, ViewGroup container,
       Bundle savedInstanceState) {
-    // Inflate the layout for this fragment
     return root;
   }
+
+  @Override
+  public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+    super.onViewCreated(view, savedInstanceState);
+    viewModel = new ViewModelProvider(getActivity()).get(MainViewModel.class);
+    viewModel.getSources().observe(getViewLifecycleOwner(), (sources) ->{
+      ArrayAdapter<Source> adapter = new ArrayAdapter<>(getContext(),
+          android.R.layout.simple_dropdown_item_1line, sources);
+      sourceName.setAdapter(adapter);
+    });
+    if (quoteId != 0) {
+      viewModel.getQuote().observe(getViewLifecycleOwner(), (quote) -> {
+        if (quote != null) {
+          quoteText.setText(quote.getText());
+          sourceName.setText((quote.getSource() != null) ? quote.getSource().getName() : "");
+        }
+      });
+    }
+    viewModel.setQuoteId(quoteId);
+  }
+
 }
+
+
